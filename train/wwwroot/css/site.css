@@ -1,0 +1,29 @@
+body {
+    background: rgb(32,37,40);
+    background: radial-gradient(circle, rgba(32,37,40,1) 0%, rgba(64,53,55,1) 57%, rgba(43,44,46,1) 100%);
+    padding-top: 5%;
+}
+
+.window {
+    width: 60%;
+    margin: auto;
+    position: relative;
+    background: #1e2624;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: inset 11px 11px 31px #000000, inset 11px -11px 31px #403537, inset -11px -11px 31px #403537, inset -11px 11px 31px #000000;
+}
+
+.windowimg {
+    width: 100%;
+    border-radius: 20px;
+    display: inline;
+    position: absolute;
+    box-shadow: inset 11px 11px 31px #000000, inset 11px -11px 31px #403537, inset -11px -11px 31px #403537, inset -11px 11px 31px #000000;
+}
+
+video {
+    width: 100%;
+    object-fit: fill;
+    padding-bottom: 10px;
+}
