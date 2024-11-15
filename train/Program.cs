@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 using Npgsql;
-using train.BlPages;
 using train.Service;
 using train.Servise;
 
@@ -34,21 +33,6 @@ builder.Services.AddSingleton<WayGen>();
 builder.Services.AddHostedService<WayHostedService>();
 
 
-/*// Add services to the container.
-builder.Services.AddRazorPages();
-//Creating a CORS policy
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddDbContext<ResourcesContext>(opt =>
-	opt.UseNpgsql("Host = localhost; Port = 5433; Database = usersdb; Username = postgres; Password = здесь_указывается_пароль_от_postgres"));
-
-
-builder.Services.AddTransient<IBackgrounds, BackgroundsService>();
-builder.Services.AddSingleton<WayGen>();
-builder.Services.AddHostedService<WayHostedService>();*/
 
 
 
@@ -76,10 +60,6 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAntiforgery();
 
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-//	.AddAdditionalAssemblies(typeof(BlazorApp1.Client._Imports).Assembly);
 
 app.Run();
 
