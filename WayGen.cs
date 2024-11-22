@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Reflection.Emit;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Query.ExpressionTranslators.Internal;
 using train.Model;
 using static System.Collections.Specialized.BitVector32;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -42,14 +41,13 @@ namespace train.Servise
 				Landscape = Model.Landscape.FOREST,
 				Weather = Model.Weather.SUN,
 				OutEffects = Model.OutEffects.ANY,
-				Time = Model.Time.AFTERNOON,
+				Time = Model.Time.AFTERNOON
 			};
 
             string str_forest = "\\train\\forest_better.webm";
             string str_field = "\\train\\field.webm";
             string str_suburban = "\\train\\forest.webm";
             string str_monument = "\\train\\canyon.webm";
-            string str_train = "\\train\\canyon.webm";
 
             if (L == Landscape.FOREST)
                 B.fileName = str_forest;
@@ -59,8 +57,6 @@ namespace train.Servise
                 B.fileName = str_suburban;
             if (L == Landscape.MONUMENT)
                 B.fileName = str_monument;
-            if (L == Landscape.TRAIN)
-                B.fileName = str_train;
 
 
             _logger.LogInformation(B.fileName);
@@ -70,14 +66,14 @@ namespace train.Servise
         // ниже описана функция получения кол-ва видео-фрагментов
         static public int videoNum(Random Generator)
         {
-            int value = Generator.Next(600, 1800);
+            int value = Generator.Next(600, 900);
             int videoNum = value / 30; //30 seconds
 
             return (videoNum);
         }
 
         //Генератор
-        public List<string> generator(int ASeed, int DSeed)
+        static public List<string> generator(int ASeed, int DSeed)
         {
             Random Generator = new Random(ASeed + DSeed);
 
@@ -90,11 +86,9 @@ namespace train.Servise
 
             int N_v = videoNum(Generator);
 
-            _logger.LogInformation("\n\tCOUNT OF LANDSCAPES: " + N_v.ToString() + "\n");
+/*            _logger.LogInformation("\n\tCOUNT OF LANDSCAPES: " + N_v.ToString() + "\n");*/
 
             int monument_id = Generator.Next(2, N_v - 3);
-
-            _logger.LogInformation("\n\tMONUMENT ID: " + monument_id.ToString() + "\n");
 
             int N_suburb = Generator.Next(2, 6);
 
@@ -142,40 +136,8 @@ namespace train.Servise
                 outList.Add("suburb");
             }
 
-            int max = -1;
-            int idMax = 0;
-
-            for (int i = 0; i < video.Count(); i++)
-            {
-                if(max < video[i])
-                {
-                    max = video[i];
-                    idMax = i;
-                }
-
-            }
-
-            int idTrain = N_suburb;
-
-            _logger.LogInformation("------------------" + idMax.ToString());
-
-            for (int k = 0; k < video.Count(); k++)
-            {
-
-                if (k< idMax)
-                    idTrain += video[k];
-                else
-                {
-                    idTrain += video[k] / 2;
-                    break;
-                }
-
-            }
-
-            outList[idTrain] = "train";
-
-            for (int i = 0; i < outList.Count(); i++)
-                _logger.LogInformation(outList[i].ToString());
+/*            for(int i = 0; i < outList.Count(); i++)
+                _logger.LogInformation(outList[i].ToString());*/
 
             return outList;
         }
@@ -308,33 +270,31 @@ namespace train.Servise
                 {
                     B = await GetBackground((Landscape)landToPath(wayTuple.Item1[i]), Weather.SUN, Time.AFTERNOON, OutEffects.ANY);
 
-/*                    _logger.LogInformation("\t\n" + B.fileName +"\n");
-                    _logger.LogInformation(wayTuple.Item1[i] + "\n");*/
+                    _logger.LogInformation("\t\n" + B.fileName +"\n");
+                    _logger.LogInformation(wayTuple.Item1[i] + "\n");
                     outList.Add(B);
                     loadSet.Add(B);
                     video.Add(wayTuple.Item2[i]);
                 }
             }
 
-            int durationLandscape = 0;
+            int duration = 0;
 
             for (int i = 0; i < wayTuple.Item2.Count(); ++i)
             {
-                durationLandscape += wayTuple.Item2[i];
+                duration += wayTuple.Item2[i];
             }
 
             loggerFunc(wayTuple);
 
-            durationLandscape = durationLandscape * 30000;
-
-            int durationTrain = 7000;
+            duration = duration * 30000;
 
             WayModel way = new WayModel
             {
                 DepartureTime = DateTime.Now.ToUniversalTime(),
                 Departure = D,
                 Arrival = A,
-                Duration = durationLandscape,
+                Duration = duration,
                 BackLoad = loadSet.ToList(),
                 Backgrounds = outList,
                 BackgroundsSampleCount = video,
@@ -344,6 +304,7 @@ namespace train.Servise
             _way = way;
             return way;
         }
+
 
         //return outList;
 

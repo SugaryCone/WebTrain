@@ -9,6 +9,7 @@
 		SUBURB,
 		STATION,
 		MONUMENT,
+		TRAIN,
 		ANY
 	}
 
