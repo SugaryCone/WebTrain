@@ -6,12 +6,20 @@
 	{
 		FOREST,
 		FIELD,
-		SUBURB,
-		STATION,
+
+		SUBURBinFIRST,
+        SUBURBinSECOND,
+        SUBURBoutFIRST,
+        SUBURBoutSECOND,
+        SUBURB,
+
+        STATION,
 		MONUMENT,
 		TRAIN,
 		ANY
 	}
+
+	//
 
 	public enum Weather
 	{

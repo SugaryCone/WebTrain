@@ -39,8 +39,10 @@ namespace train.Service
 				{
 					_logger.LogInformation("sss" + b.fileName);
 				}
+				_logger.LogWarning(way.Duration.ToString());
+                _refreshInterval = TimeSpan.FromSeconds(way.Duration/1000 - 10);
+                //_refreshInterval = TimeSpan.FromSeconds(10);
 
-				_refreshInterval = TimeSpan.FromSeconds(way.Duration);
 				_logger.LogInformation(_refreshInterval.ToString());
 
 				_logger.LogInformation("Latest rates updated");

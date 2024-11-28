@@ -47,20 +47,82 @@ namespace train.Servise
 
             string str_forest = "\\train\\forest_better.webm";
             string str_field = "\\train\\field.webm";
-            string str_suburban = "\\train\\forest.webm";
+
+            string str_suburbINfirst = "\\train\\trainSUBwebm\\sub70-40.webm";
+            string str_suburbOUTfirst = "\\train\\trainSUBwebm\\sub20-40.webm";
+            string str_suburbINsecond = "\\train\\trainSUBwebm\\sub40-20.webm";
+            string str_suburbOUTsecond = "\\train\\trainSUBwebm\\sub40-70.webm";
+            string str_suburb = "\\train\\forest_better.webm";
+
             string str_monument = "\\train\\canyon.webm";
             string str_train = "\\train\\canyon.webm";
 
             if (L == Landscape.FOREST)
+            {
                 B.fileName = str_forest;
+                B.Id = 1;
+            }
+
             if (L == Landscape.FIELD)
+            {
                 B.fileName = str_field;
+                B.Id = 2;
+            }
+
+            if (L == Landscape.SUBURBinFIRST)
+            {
+                B.fileName = str_suburbINfirst;
+                B.Id = 3;
+            }
+            if (L == Landscape.SUBURBoutFIRST)
+            {
+                B.fileName = str_suburbOUTfirst;
+                B.Id = 4;
+            }
+
+            if (L == Landscape.SUBURBinSECOND)
+            {
+                B.fileName = str_suburbINsecond;
+                B.Id = 5;
+            }
+
+            if (L == Landscape.SUBURBoutSECOND)
+            {
+                B.fileName = str_suburbOUTsecond;
+                B.Id = 6;
+            }
+
             if (L == Landscape.SUBURB)
-                B.fileName = str_suburban;
+            {
+                B.fileName = str_suburb;
+                B.Id = 7;
+            }
+
             if (L == Landscape.MONUMENT)
+            {
                 B.fileName = str_monument;
+
+                B.Id = 8;
+            }
+
             if (L == Landscape.TRAIN)
+            {
                 B.fileName = str_train;
+
+                B.Id = 9;
+            }
+
+
+            /*            if (L == Landscape.FOREST)
+                            B.fileName = str_forest;
+                        if (L == Landscape.FIELD)
+                            B.fileName = str_field;
+                        if (L == Landscape.SUBURB)
+                            B.fileName = str_suburban;
+                        if (L == Landscape.MONUMENT)
+                            B.fileName = str_monument;
+                        if (L == Landscape.TRAIN)
+                            B.fileName = str_train;*/
 
 
             _logger.LogInformation(B.fileName);
@@ -70,7 +132,7 @@ namespace train.Servise
         // ниже описана функция получения кол-ва видео-фрагментов
         static public int videoNum(Random Generator)
         {
-            int value = Generator.Next(600, 1800);
+            int value = Generator.Next(180, 300);
             int videoNum = value / 30; //30 seconds
 
             return (videoNum);
@@ -107,7 +169,10 @@ namespace train.Servise
             }
             video.Add(N_empty - (video[0] + video[1] + video[2]));
 
-            for (int i = 0; i < N_suburb; i++)
+            outList.Add("suburbOUTfirst");
+            outList.Add("suburbOUTsecond");
+
+            for (int i = 0; i < N_suburb-2; i++)
             {
                 outList.Add("suburb");
             }
@@ -137,10 +202,13 @@ namespace train.Servise
                 }
             }
 
-            for (int i = 0; i < N_suburb; i++)
+            for (int i = 0; i < N_suburb-2; i++)
             {
                 outList.Add("suburb");
             }
+
+            outList.Add("suburbINfirst");
+            outList.Add("suburbINsecond");
 
             int max = -1;
             int idMax = 0;
@@ -229,11 +297,17 @@ namespace train.Servise
             /*
             FOREST = 0,
 		    FIELD = 1,
-		    SUBURB = 2,
-		    STATION = 3,
-		    MONUMENT = 4,
-            TRAIN = 5,
-		    ANY = 6
+
+		    SUBURBinFIRST = 2,
+            SUBURBinSECOND = 3,
+            SUBURBoutFIRST = 4,
+            SUBURBoutSECOND = 5,
+            SUBURB = 6,
+
+		    STATION = 5,
+		    MONUMENT = 6,
+            TRAIN = 7,
+		    ANY = 8
             */
 
             /*            string str_forest = "\\train\\forest_better.webm";
@@ -245,21 +319,35 @@ namespace train.Servise
 
             int int_forest = 0;
             int int_field = 1;
-            int int_suburban = 2;
-            int int_monument = 4;
 
-            int outInt = 0;
+            int int_suburbINfirst = 2;
+            int int_suburbINsecond = 3;
+            int int_suburbOUTfirst = 4;
+            int int_suburbOUTsecond = 5;
+            int int_suburb = 6;
 
+            int int_monument = 7;
+            int int_train = 8;
+
+            if (_way == "suburbINfirst")
+                return int_suburbINfirst;
+            if (_way == "suburbINsecond")
+                return int_suburbINsecond;
+            if (_way == "suburbOUTfirst")
+                return int_suburbOUTfirst;
+            if (_way == "suburbOUTsecond")
+                return int_suburbOUTsecond;
             if (_way == "suburb")
-                outInt = int_suburban;
+                return int_suburb;
             if (_way == "forest")
-                outInt = int_forest;
+                return int_forest;
             if (_way == "field")
-                outInt = int_field;
+                return int_field;
             if (_way == "monument")
-                outInt = int_monument;
-
-            return outInt;
+                return int_monument;
+            if (_way == "train")
+                return int_train;
+            return 0;
         }
 
         public void loggerFunc(Tuple<List<string>, List<int>> _way)
