@@ -45,14 +45,14 @@ namespace train.Servise
 				Time = Model.Time.AFTERNOON,
 			};
 
-            string str_forest = "\\train\\forest_better.webm";
+            string str_forest = "\\train\\forest.webm";
             string str_field = "\\train\\field.webm";
 
             string str_suburbINfirst = "\\train\\trainSUBwebm\\sub70-40.webm";
             string str_suburbOUTfirst = "\\train\\trainSUBwebm\\sub20-40.webm";
             string str_suburbINsecond = "\\train\\trainSUBwebm\\sub40-20.webm";
             string str_suburbOUTsecond = "\\train\\trainSUBwebm\\sub40-70.webm";
-            string str_suburb = "\\train\\forest_better.webm";
+            string str_suburb = "\\train\\forest.webm";
 
             string str_monument = "\\train\\canyon.webm";
             string str_train = "\\train\\canyon.webm";
@@ -132,7 +132,7 @@ namespace train.Servise
         // ниже описана функция получения кол-ва видео-фрагментов
         static public int videoNum(Random Generator)
         {
-            int value = Generator.Next(180, 300);
+            int value = Generator.Next(180, 330);
             int videoNum = value / 30; //30 seconds
 
             return (videoNum);
@@ -419,7 +419,7 @@ namespace train.Servise
 
             WayModel way = new WayModel
             {
-                DepartureTime = DateTime.Now.ToUniversalTime(),
+                DepartureTime = DateTime.Now.AddMilliseconds(10).ToUniversalTime(),
                 Departure = D,
                 Arrival = A,
                 Duration = durationLandscape,

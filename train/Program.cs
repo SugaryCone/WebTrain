@@ -1,13 +1,25 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-
+using Microsoft.Extensions.WebEncoders;
 using Npgsql;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using train.Service;
 using train.Servise;
+
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
         .AddInteractiveServerComponents();
+
+
+
+builder.Services.Configure<WebEncoderOptions>(options =>
+{
+	options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
+});
 
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
