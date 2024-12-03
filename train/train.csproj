@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <_ContentIncludedByDefault Remove="waygen.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="KristofferStrube.Blazor.WebAudio" Version="0.1.0-alpha.12" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">

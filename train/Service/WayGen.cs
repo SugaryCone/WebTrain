@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection.Emit;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Query.ExpressionTranslators.Internal;
 using train.Model;
 using static System.Collections.Specialized.BitVector32;
@@ -17,17 +19,26 @@ namespace train.Servise
 		//private readonly IBackgrounds backgrounds;
 		private readonly IServiceProvider _provider;
 		private readonly ILogger<WayGen> _logger;
+        private readonly IOptions<WayGenSettings> _settings;
 		private WayModel? _way;
-		static int ii= 0;
-		public WayModel? GetLatestWayModel() => _way;
 
-		public WayGen(IServiceProvider provider,
-		ILogger<WayGen> logger)
+
+
+		static int ii= 0;
+
+
+
+        public WayModel? GetLatestWayModel() => _way;
+
+		public WayGen(IServiceProvider provider, ILogger<WayGen> logger, IOptions<WayGenSettings> settings)
 		{
 			_provider = provider;
 			_logger = logger;
+            _settings = settings;
 		}
 
+
+        //НУЖНО ИСПРАВИТЬ
 		public async Task<Background> GetBackground(Landscape L, Weather W, Time T, OutEffects O)
 		{
 			using var scope = _provider.CreateScope();
@@ -112,38 +123,25 @@ namespace train.Servise
                 B.Id = 9;
             }
 
-
-            /*            if (L == Landscape.FOREST)
-                            B.fileName = str_forest;
-                        if (L == Landscape.FIELD)
-                            B.fileName = str_field;
-                        if (L == Landscape.SUBURB)
-                            B.fileName = str_suburban;
-                        if (L == Landscape.MONUMENT)
-                            B.fileName = str_monument;
-                        if (L == Landscape.TRAIN)
-                            B.fileName = str_train;*/
-
-
             _logger.LogInformation(B.fileName);
 			return B;
 		}
 
         // ниже описана функция получения кол-ва видео-фрагментов
-        static public int videoNum(Random Generator)
+        private int videoNum(Random Generator)
         {
-            int value = Generator.Next(180, 330);
-            int videoNum = value / 30; //30 seconds
+            int value = Generator.Next(_settings.Value.minWayDur, _settings.Value.maxWayDur);
+            int videoNum = value / _settings.Value.videoDuration; 
 
-            return (videoNum);
+            return videoNum;
         }
 
         //Генератор
-        public List<string> generator(int ASeed, int DSeed)
+        public List<Landscape> generator(int ASeed, int DSeed)
         {
             Random Generator = new Random(ASeed + DSeed);
 
-            List<string> outList = new List<string>();
+            List<Landscape> outList = new List<Landscape>();
             List<int> video = new List<int>();
 
             int rnd_buff = 0;
@@ -152,35 +150,35 @@ namespace train.Servise
 
             int N_v = videoNum(Generator);
 
-            _logger.LogInformation("\n\tCOUNT OF LANDSCAPES: " + N_v.ToString() + "\n");
+            _logger.LogDebug("\n\tCOUNT OF LANDSCAPES: " + N_v.ToString() + "\n");
 
-            int monument_id = Generator.Next(2, N_v - 3);
+            int monument_id = Generator.Next(_settings.Value.leftMonumentPos, N_v - _settings.Value.rightMonumentPos);
 
-            _logger.LogInformation("\n\tMONUMENT ID: " + monument_id.ToString() + "\n");
+            _logger.LogDebug("\n\tMONUMENT ID: " + monument_id.ToString() + "\n");
 
-            int N_suburb = Generator.Next(2, 6);
+            int N_suburb = Generator.Next(_settings.Value.minSuburbNumber, _settings.Value.maxSuburbNumber);
 
             int N_empty = N_v - N_suburb * 2;
 
             for (int i = 0; i < 3; i++)
             {
-                int N_video = Generator.Next((N_empty / 4) - 3, (N_empty / 4) + 3);
+                int N_video = Generator.Next((N_empty / 4) - 3, (N_empty / 4) + 3);//Знать бы что тут творится
                 video.Add(N_video);
             }
             video.Add(N_empty - (video[0] + video[1] + video[2]));
 
-            outList.Add("suburbOUTfirst");
-            outList.Add("suburbOUTsecond");
+            outList.Add(Landscape.SUBURBoutFIRST);
+            outList.Add(Landscape.SUBURBoutSECOND);
 
             for (int i = 0; i < N_suburb-2; i++)
             {
-                outList.Add("suburb");
+                outList.Add(Landscape.SUBURB);
             }
 
             for (int i = 0; i < 4; i++)
             {
 
-                string str = "";
+                Landscape landscape = Landscape.ANY;
 
                 if (i == 1)
                     rnd_buff = Math.Abs(rnd_buff - 1);
@@ -188,27 +186,27 @@ namespace train.Servise
                     rnd_buff = Generator.Next(0, 2);
 
                 if (rnd_buff == 0)
-                    str = "forest";
+                    landscape = Landscape.FOREST;
                 else
-                    str = "field";
+                    landscape = Landscape.FIELD;
 
                 for (int j = 0; j < video[i]; j++)
                 {
                     video_id++;
                     if (monument_id == video_id)
-                        outList.Add("monument");
+                        outList.Add(Landscape.MONUMENT);
                     else
-                        outList.Add(str);
+                        outList.Add(landscape);
                 }
             }
 
             for (int i = 0; i < N_suburb-2; i++)
             {
-                outList.Add("suburb");
+                outList.Add(Landscape.SUBURB);
             }
 
-            outList.Add("suburbINfirst");
-            outList.Add("suburbINsecond");
+            outList.Add(Landscape.SUBURBinFIRST);
+            outList.Add(Landscape.SUBURBinSECOND);
 
             int max = -1;
             int idMax = 0;
@@ -225,7 +223,7 @@ namespace train.Servise
 
             int idTrain = N_suburb;
 
-            _logger.LogInformation("------------------" + idMax.ToString());
+            _logger.LogDebug("------------------" + idMax.ToString());
 
             for (int k = 0; k < video.Count(); k++)
             {
@@ -240,26 +238,23 @@ namespace train.Servise
 
             }
 
-            outList[idTrain] = "train";
+            outList[idTrain] = Landscape.TRAIN;
 
             for (int i = 0; i < outList.Count(); i++)
-                _logger.LogInformation(outList[i].ToString());
+                _logger.LogDebug(outList[i].ToString());
 
             return outList;
         }
 
-        static public Tuple<List<string>,List<int>> listsFull(List<string> _landscapes)
+        static public Tuple<List<Landscape>,List<int>> listsFull(List<Landscape> _landscapes)
         {
-            List<string> landscapes = new List<string>();
+            List<Landscape> landscapes = new List<Landscape>();
             List<int> countLandscapes = new List<int>();
 
-            Tuple<List<string>, List<int>> outTuple = new Tuple<List<string>, List<int>>(landscapes, countLandscapes);
+            Tuple<List<Landscape>, List<int>> outTuple = new Tuple<List<Landscape>, List<int>>(landscapes, countLandscapes);
 
-/*            for (int i = 0; i < 7; i++)
-                countLandscapes.Add(0);*/
-
-            string str = _landscapes[0];
-            landscapes.Add(str);
+            Landscape currentLandscape = _landscapes[0];
+            landscapes.Add(currentLandscape);
             countLandscapes.Add(0);
 
             int j = 0;
@@ -267,101 +262,33 @@ namespace train.Servise
             for (int i = 0; i < _landscapes.Count(); i++)
             {
 
-                if (str == _landscapes[i])
+                if (currentLandscape == _landscapes[i])
                 {
                     countLandscapes[j]++;
                 }
                 else
                 {
-                    str = _landscapes[i];
-                    landscapes.Add(str);
+                    currentLandscape = _landscapes[i];
+                    landscapes.Add(currentLandscape);
                     j++;
                     countLandscapes.Add(0);
                     countLandscapes[j]++;
                 }
-/*                _logger.LogInformation("\n\n");
-                _logger.LogInformation("str: " + str);
-                _logger.LogInformation("_lanscapes[i]: " + _landscapes[i]);
-                _logger.LogInformation("j: " + j);
-                _logger.LogInformation("countLandscapes[j]: " + countLandscapes[j]);
-                _logger.LogInformation("\n\n");*/
 
             }
 
             return outTuple;
         }
 
-        static public int landToPath(string _way)
-        {
-            //id фрагментов
-            /*
-            FOREST = 0,
-		    FIELD = 1,
-
-		    SUBURBinFIRST = 2,
-            SUBURBinSECOND = 3,
-            SUBURBoutFIRST = 4,
-            SUBURBoutSECOND = 5,
-            SUBURB = 6,
-
-		    STATION = 5,
-		    MONUMENT = 6,
-            TRAIN = 7,
-		    ANY = 8
-            */
-
-            /*            string str_forest = "\\train\\forest_better.webm";
-                        string str_field = "\\train\\field.webm";
-                        string str_suburban = "\\train\\forest.webm";
-                        string str_monument = "\\train\\canyon.webm";*/
-
-            //string outString = "";
-
-            int int_forest = 0;
-            int int_field = 1;
-
-            int int_suburbINfirst = 2;
-            int int_suburbINsecond = 3;
-            int int_suburbOUTfirst = 4;
-            int int_suburbOUTsecond = 5;
-            int int_suburb = 6;
-
-            int int_monument = 7;
-            int int_train = 8;
-
-            if (_way == "suburbINfirst")
-                return int_suburbINfirst;
-            if (_way == "suburbINsecond")
-                return int_suburbINsecond;
-            if (_way == "suburbOUTfirst")
-                return int_suburbOUTfirst;
-            if (_way == "suburbOUTsecond")
-                return int_suburbOUTsecond;
-            if (_way == "suburb")
-                return int_suburb;
-            if (_way == "forest")
-                return int_forest;
-            if (_way == "field")
-                return int_field;
-            if (_way == "monument")
-                return int_monument;
-            if (_way == "train")
-                return int_train;
-            return 0;
-        }
-
-        public void loggerFunc(Tuple<List<string>, List<int>> _way)
+        public void loggerFunc(Tuple<List<Landscape>, List<int>> _way)
         {
             _logger.LogInformation("\n\tThere is log information: \n");
             _logger.LogInformation("\nList and count of landscapes: ");
             for (int i = 0; i < _way.Item1.Count(); ++i)
                 _logger.LogInformation(_way.Item1[i].ToString() + _way.Item2[i].ToString());
         }
-
-        public async Task<WayModel> RunAsync()
+        public async Task<int> RunAsync()
 		{
-
-            _logger.LogInformation("Run");
 			//gen stations
 			Station D = new Station
 			{
@@ -384,22 +311,19 @@ namespace train.Servise
             //Список кол-ва видео-фрагментов в четвертях
             List<int> video = new List<int>();
 
-            Background B = await GetBackground(Landscape.FOREST, Weather.SUN, Time.AFTERNOON, OutEffects.ANY);
+            Background nextBack = null;
 
-            List<string> wayGen = generator(A.seed, D.seed);
+            List<Landscape> wayGen = generator(A.seed, D.seed);
 
-            Tuple<List<string>, List<int>> wayTuple = listsFull(wayGen);
+            Tuple<List<Landscape>, List<int>> wayTuple = listsFull(wayGen);
 
             if (wayTuple.Item1.Count() == wayTuple.Item2.Count())
             {
                 for (int i = 0; i < wayTuple.Item1.Count(); ++i)
                 {
-                    B = await GetBackground((Landscape)landToPath(wayTuple.Item1[i]), Weather.SUN, Time.AFTERNOON, OutEffects.ANY);
-
-/*                    _logger.LogInformation("\t\n" + B.fileName +"\n");
-                    _logger.LogInformation(wayTuple.Item1[i] + "\n");*/
-                    outList.Add(B);
-                    loadSet.Add(B);
+                    nextBack = await GetBackground(wayTuple.Item1[i], Weather.SUN, Time.AFTERNOON, OutEffects.ANY);
+                    outList.Add(nextBack);
+                    loadSet.Add(nextBack);
                     video.Add(wayTuple.Item2[i]);
                 }
             }
@@ -413,13 +337,11 @@ namespace train.Servise
 
             loggerFunc(wayTuple);
 
-            durationLandscape = durationLandscape * 30000;
-
-            int durationTrain = 7000;
+            durationLandscape = durationLandscape * _settings.Value.videoDuration *1000;//in milliseconds
 
             WayModel way = new WayModel
             {
-                DepartureTime = DateTime.Now.AddMilliseconds(10).ToUniversalTime(),
+                DepartureTime = DateTime.Now.AddMilliseconds(_settings.Value.wayGap).ToUniversalTime(),
                 Departure = D,
                 Arrival = A,
                 Duration = durationLandscape,
@@ -430,102 +352,8 @@ namespace train.Servise
             };
 
             _way = way;
-            return way;
+            return way.Duration;
         }
-
-        //return outList;
-
-        //Заполнили loadSet уникальными значениями, пройдясь по всему outList
-
-        /*            for (int i = 0; i < outList.Count; i++)
-                    {
-                        loadSet.Add(outList[i]);
-                    }*/
-
-
-
-
-
-
-
-
-        /* int duration = Generator.Next(600, 1200);
-         _logger.LogInformation("duration" + duration.ToString());
-         int base_dure = 30;
-
-         while(duration % base_dure != 0)
-         {
-             duration--;
-         }
-
-         double start_dur = duration * 0.15;
-         double middle_dur = duration - 2*start_dur;
-         HashSet<Background> load_set = new HashSet<Background>(new BackgroundEqualityComparer());
-         List<Background> list = new List<Background>();
-         List<int> listCounts = new List<int>();*/
-
-        /*            int TokenCountStart = (int)(duration / base_dure);
-                    _logger.LogInformation("start" + TokenCountStart.ToString());
-                    //Отъезд - пригород 15 %
-                    while (TokenCountStart > 0) 
-                    {
-
-                        Background B = await GetBackground((Landscape)Generator.Next(0,2), Weather.SUN, Time.AFTERNOON, OutEffects.ANY);
-
-                        int sample_count = Generator.Next(1, TokenCountStart);
-                        TokenCountStart -= sample_count;
-                        _logger.LogInformation("start------------" + TokenCountStart.ToString());
-                        load_set.Add(B);
-                        list.Add(B);
-                        listCounts.Add(sample_count);
-
-                    }*/
-
-
-
-
-
-        //Дорога - самая длинная часть
-        //Крупный объект					70%
-        //Дорога - самая длинная часть
-
-
-        /*			int TokenCountMiddle = (int)(middle_dur / base_dure);
-                    //Отъезд - пригород 15 %
-                    while (TokenCountMiddle > 0)
-
-                    {
-                        Background B = await GetBackground(Landscape.FOREST, Weather.SUN, Time.AFTERNOON, OutEffects.ANY);
-                        int sample_count = Generator.Next(1,TokenCountMiddle);
-                        TokenCountMiddle -= sample_count;
-
-                        load_set.Add(B);
-                        list.Add(B);
-                        listCounts.Add(sample_count);
-                    }
-
-
-
-
-                    //подъезд - пригород 15%
-
-                    int TokenCountEnd = (int)(start_dur / base_dure);
-                    //Отъезд - пригород 15 %
-                    while (TokenCountEnd > 0)
-                    {
-                        Background B = await GetBackground(Landscape.FOREST, Weather.SUN, Time.AFTERNOON, OutEffects.ANY);
-                        int sample_count = Generator.Next(1,TokenCountEnd);
-                        TokenCountEnd -= sample_count;
-
-                        load_set.Add(B);
-                        list.Add(B);
-                        listCounts.Add(sample_count);
-
-                    }*/
-
-        //gen token list from seed
-        //gen video and audio from token list
-
 
     }
 }

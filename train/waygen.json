@@ -1,0 +1,11 @@
+{
+  "durationTrain": 7000,
+  "wayGap": 10,
+  "videoDuration": 30000,
+  "minWayDur": 180,
+  "maxWayDur": 300,
+  "minSuburbNumber": 2,
+  "maxSuburbNumber": 6,
+  "leftMonumentPos": 2,
+  "rightMonumentPos": 3,
+}

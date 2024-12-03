@@ -1,4 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using train.Model;
 using train.Servise;
 
@@ -6,19 +12,26 @@ using train.Servise;
 
 namespace train.Controllers
 {
-	[Route("api/[controller]")]
-	[ApiController]
-	public class BackgroundsController : ControllerBase
+	public class BackgroundsController : Controller
 	{
 		private readonly IBackgrounds _backgroundService;
 		public BackgroundsController(IBackgrounds backgrounds) {
 			_backgroundService = backgrounds;
 		}
-		// GET: api/<BackgroundsController>
-		[HttpPost]
+
+        public async Task<IActionResult> Index()
+        {
+
+
+            return View();
+        }
+
+        // GET: api/<BackgroundsController>
+        [HttpPost]
 		public IActionResult Post(Background B)
 		{
-			_backgroundService.SetBack(B);
+			Console.WriteLine("sss");
+			/*_backgroundService.SetBack(B);*/
 			return Ok();
 		}
 

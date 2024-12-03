@@ -28,27 +28,16 @@ namespace train.Service
 
 			while (!stoppingToken.IsCancellationRequested)
 			{
-				_logger.LogInformation("Fetching latest rates");
-				WayModel way = await _wayGen.RunAsync();
 
-				_logger.LogInformation("sss" + way.Backgrounds.ToString());
+				_logger.LogInformation("Generate next way for train");
+                int duration = await _wayGen.RunAsync();
+				
+                _refreshInterval = TimeSpan.FromSeconds(duration/1000);
+                _logger.LogInformation($"Duration of next way {_refreshInterval}");
+                await Task.Delay(_refreshInterval, stoppingToken);
+                _logger.LogInformation("New way create");
 
-				_logger.LogInformation("sss" + way.BackgroundsSampleCount.ToString());
-
-				foreach (Background b in way.Backgrounds)
-				{
-					_logger.LogInformation("sss" + b.fileName);
-				}
-				_logger.LogWarning(way.Duration.ToString());
-                _refreshInterval = TimeSpan.FromSeconds(way.Duration/1000);
-                //_refreshInterval = TimeSpan.FromSeconds(10);
-
-				_logger.LogInformation(_refreshInterval.ToString());
-
-				_logger.LogInformation("Latest rates updated");
-
-				await Task.Delay(_refreshInterval, stoppingToken);
-			}
+            }
 		}
 	}
 }

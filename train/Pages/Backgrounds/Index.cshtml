@@ -1,0 +1,34 @@
+﻿@page
+@using train.Model
+
+@{
+}
+<h2>Добавление нового фона</h2>
+<form method="Post">
+    <p>
+        <label>путь</label><br />
+        <input name="fileName" />
+    </p>
+    <p>
+        <label>Landscape:</label><br />
+        <select name="Landscape" type="number" asp-items="Html.GetEnumSelectList<Landscape>()"></select>
+    </p>
+    <p>
+        <label>Weather:</label><br />
+        <select name="Weather" type="number" asp-items="Html.GetEnumSelectList<Weather>()"></select>
+    </p>
+    <p>
+        <label>Time:</label><br />
+        <select name="Time" type="number" asp-items="Html.GetEnumSelectList<Time>()"></select>
+    </p>
+    <p>
+        <label>OutEffects:</label><br />
+        <select name="OutEffects" type="number" asp-items="Html.GetEnumSelectList<OutEffects>()"></select>
+    </p>
+    <input type="submit" value="Отправить" />
+
+
+
+
+
+</form>

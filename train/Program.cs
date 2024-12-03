@@ -4,6 +4,7 @@ using Microsoft.Extensions.WebEncoders;
 using Npgsql;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using train.Model;
 using train.Service;
 using train.Servise;
 
@@ -43,7 +44,7 @@ builder.Services.AddDbContext<ResourcesContext>(opt =>
 builder.Services.AddTransient<IBackgrounds, BackgroundsService>();
 builder.Services.AddSingleton<WayGen>();
 builder.Services.AddHostedService<WayHostedService>();
-
+builder.Services.Configure<WayGenSettings>(builder.Configuration.GetSection("waygen"));
 
 
 
